@@ -1,0 +1,158 @@
+<html>
+    <head>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    </head>
+    <body>
+        <script>
+            $(function () {
+                $(document).ready(function () {
+                    Highcharts.setOptions({
+                        global: {
+                            useUTC: false
+                        }
+                    });
+
+                    var socket = io.connect();
+//
+//                    socket.on('message', function(data){
+//                        samplevalue = data.message;
+//                        console.log(samplevalue);
+//                        socket.emit('messageSuccess', {data: 'success'});
+//                        time = (new Date()).getTime();
+////                        for (i = 0; i < samplevalue.length; i++) {
+////                            seriesData.push({
+////                                x: (new Date()).getTime() + i*1000,
+////                                y: samplevalue[i]
+////                            });
+////                        }
+//                        seriesData.push({
+//                           x:  (new Date()).getTime() + i*1000,
+//                            y: 2
+//                        });
+//                    })
+
+                    $('#container').highcharts({
+                        chart: {
+                            type: 'spline',
+                            animation: Highcharts.svg, // don't animate in old IE
+                            marginRight: 10,
+                            height: 600,
+                            zoomType: 'x',
+                            events: {
+                                load: function () {
+
+                                    // set up the updating of the chart each second
+                                    var samplevalue = new Array();
+                                    var series = this.series[0];
+                                    socket.on('message', function(data){
+                                        samplevalue = data.message;
+                                        console.log(samplevalue);
+                                        socket.emit('messageSuccess', {data: 'success'});
+                                        var seriesData = [];
+                                        maxSamples = 20,
+                                        count = 0;
+
+                                        time = (new Date()).getTime();
+                                        for (i = 0; i < samplevalue.length; i++) {
+//                                            seriesData.push({
+//                                               x: (new Date()).getTime() + i*1000,
+//                                               y: samplevalue[i]
+//                                            });
+                                            //series.addPoint([time + i * 1000, samplevalue[0]], true, false);
+                                            //seriesData.push([time + i * 1000, samplevalue[i]]);
+//                                            series.addPoint([time + i * 1000, samplevalue[i]], true, true);
+//                                            this.redraw(true);
+//                                            series.addPoint({
+//                                                x:time+i*1000,
+//                                                y:samplevalue[i]
+//                                            }, false, (++count >= maxSamples));
+                                        }
+                                        //chart.redraw();
+
+                                        //seriesData.push(time + i * 1000, samplevalue[i], false, false);
+                                        //series.addPoint([time + i * 1000, samplevalue[0]], true, true);
+                                        //this.redraw(true);
+
+                                        series.setData(samplevalue, true);
+                                    })
+                                }
+                            }
+                        },
+                        plotOptions: {
+                            series: {
+                                lineWidth: 1,
+//                                turboThreshold: 0,
+//                                threshold: null,
+                                marker:{
+                                    enabled: false,
+                                    symbol: 'circle',
+                                    radius: 0
+                                }
+                            },
+                        },
+
+                        title: {
+                            text: 'Live ECG'
+                        },
+                        xAxis: {
+                            type: 'datetime',
+                            maxPadding: 0.25
+                            //tickPixelInterval: 50,
+//                            minRange: 500000,
+//                            range: 1000000
+                        },
+                        yAxis: {
+                            gridLineWidth: 0,
+                            max:0.7,
+                            min:-0.7,
+                            title: {
+                                text: 'Value'
+                            },
+                            plotLines: [{
+                                value: 0,
+                                width: 1,
+                                color: '#808080'
+                            }]
+                        },
+                        tooltip: {
+                            formatter: function () {
+                                return '<b>' + this.series.name + '</b><br/>' +
+                                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                                        Highcharts.numberFormat(this.y, 2);
+                            }
+                        },
+                        legend: {
+                            enabled: false
+                        },
+                        exporting: {
+                            enabled: true
+                        },
+                        series: [{
+                            name: 'Random data',
+                            lineWidth: 2,
+                            data:
+                                (function () {
+                                // generate an array of random data
+                                var data = [], time = (new Date()).getTime(), i;
+                                for (i = -19; i <= 0; i+=1) {
+                                    data.push({
+                                        x: time + i * 1000,
+                                        y: Math.round(Math.random() * 11)
+                                    });
+                                }
+                                return data;
+                            }())
+                        }]
+                    });
+                });
+            });
+        </script>
+        <div id="message"></div>
+        <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+    </body>
+</html>

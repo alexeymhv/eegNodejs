@@ -1,64 +1,24 @@
 /**
  * Created by alex on 15.3.12.
  */
-
-var http = require('http');
-var url = require('url');
-var fs = require('fs');
-var io = require('socket.io');
-
-var server = http.createServer(function(request, response){
-    var path = url.parse(request.url).pathname;
-    console.log(path);
-
-    switch(path){
-        case '/':
-            response.writeHead(200, {'Content-Type':'text/html'});
-            response.write('hello world');
-            response.end();
-            break;
-        case '/test.html':
-            fs.readFile(__dirname + path, function(error, data){
-                if(error){
-                    response.writeHead(404);
-                    response.write("The page doesn't exist - 404");
-                    response.end;
-                }
-                else{
-                    response.writeHead(200, {"Content-Type":"text/html"});
-                    response.write(data, "utf8");
-                    response.end();
-                }
-            });
-            break;
-        default:
-            response.writeHead(404);
-            response.write("The page doesn't exist - 404");
-            response.end();
-            break;
-    }
-});
-server.listen(3000);
-io.listen(server);
+//var io = require('socket.io');
 
 var SerialPort = require("serialport");
 var bs = 256*17;
 
-var eegModule = new SerialPort.SerialPort('/dev/ttyUSB0', {baudrate: 57600},{buffersize: bs}, {
-});
+var eegModule = new SerialPort.SerialPort('/dev/ttyUSB0', {baudrate: 57600},{buffersize: bs});
 
 var createSocket = require( 'opentsdb-socket' );
 var socket = createSocket();
 
+//socket.host( '192.168.0.108' );
 socket.host( '127.0.0.1' );
 socket.port( 4242 );
 socket.connect();
 
 var j=0;
 var p = new Array();
-var listener = io.listen(server);
 var samplevalue = 0;
-var valArr = new Array();
 
 eegModule.on('data', function(data) {
     if(j < bs){
@@ -94,42 +54,38 @@ eegModule.on('data', function(data) {
         }
         console.log("\n");
 
-        var value = '';
-        var now = require( 'date-now' );
+        var value  = '';
+        var now = require('date-now');
+        //var now = parseInt(data.getTime()/1000);
 
         for(i=3; i< dataArr.length; i+=17){
             samplevalue = ((dataArr[i] * 256) + dataArr[i+1] -512) * Math.pow(10, -6);
-            valArr.push(samplevalue);
             value += 'put ';
             value += 'eeg.data ';
-            value += Date.now() + ' ';
+            value += parseInt(Date.now()/1000) + ' ';
             value += samplevalue + ' ';
             value += 'host=A\n';
 
             socket.write( value, function ack() {
-                console.log('...data written...');
                 value = '';
             });
-            //console.log(samplevalue);
         }
-
-        listener.sockets.emit('message', {'message':valArr});
-
+        //console.log(Date.now());
+        console.log('...data written...');
         p.length = 0;
 
         dataArr.length = 0;
         j = 0;
     }
-
 });
 
-var listener = io.listen(server);
-listener.sockets.on('connection', function(socket){
-
-    console.log("ASDASDSDADSA");
-
-    socket.on ('messageSuccess', function (data) {
-        valArr.length = 0;
-        console.log(data);
-    });
-})
+//var listener = io.listen(server);
+//listener.sockets.on('connection', function(socket){
+//
+//    console.log("ASDASDSDADSA");
+//
+//    socket.on ('messageSuccess', function (data) {
+//        valArr.length = 0;
+//        console.log(data);
+//    });
+//})

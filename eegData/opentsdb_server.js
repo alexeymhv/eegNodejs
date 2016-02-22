@@ -5,7 +5,7 @@
 var http = require('http');
 var url = require('url');
 var fs = require('fs');
-var io = require('socket.io');
+var io = require('socket.io', {forceNew: true});
 
 var server = http.createServer(function(request, response){
     var path = url.parse(request.url).pathname;
@@ -44,7 +44,8 @@ var listener = io.listen(server);
 
 var opentsdb = require( 'opentsdb' );
 var client = opentsdb.client();
-client.host( '127.0.0.1' );
+//client.host( '192.168.0.108' );
+client.host('127.0.0.1');
 client.port( 4242 );
 
 var mQuery = opentsdb.mquery();
@@ -52,43 +53,74 @@ mQuery.aggregator( 'sum' );
 mQuery.tags( 'host', 'A' );
 mQuery.metric( 'eeg.data' );
 
-client.start( '2016/02/06-21:52:38' );
-client.end( '2016/02/07-17:01:24' );
-client.queries(mQuery);
-
 var valArr = new Array();
 var timeArr = new Array();
-var s = false;
 
-client.get( function onData(error, data){
-    if(error){
-        console.error(JSON.stringify(error));
-        return;
-    }
-    //console.log(JSON.stringify(data, true, '\t'));
-    data.toString();
+setInterval(function(){
+    var data = new Date();
+    var current_time = parseInt(data.getTime()/1000);
+    console.log(current_time-2000);
+    console.log(current_time);
 
-    for(i=0; i<data[0].dps.length; i++){
+    client.start( convertTime(current_time-500) );
+    client.end( convertTime(current_time) );
+    client.queries(mQuery);
+
+    client.get( function onData(error, data){
+        if(error){
+            console.error(JSON.stringify(error));
+            return;
+        }
+
+        data.toString();
+
+        for(i=0; i<data[0].dps.length; i++){
             valArr.push(data[0].dps[i][0].toString());
             valArr.push(data[0].dps[i][1].toString());
-        //timeArr.push(data[0].dps[i][0].toString());
-        //valArr.push(data[0].dps[i][1].toString());
-    }
-
-    listener.sockets.on('connection', function(socket){
+        }
 
         listener.sockets.emit('message', {'message':valArr});
-        socket.on ('messageSuccess', function (data) {
-            console.log(data);
-        });
-    })
 
-});
+        valArr.length = 0;
 
-//listener.sockets.on('connection', function(socket){
-//
-//    //listener.sockets.emit('message', {'message':valArr});
-//    socket.on ('messageSuccess', function (data) {
-//        console.log(data);
-//    });
-//})
+    });
+},1000);
+
+function convertTime(timestamp) {
+    var date = new Date(timestamp * 1000);
+    var tmpMonth = date.getMonth();
+    if(parseInt(tmpMonth) < 9)
+        var month = '0' + (tmpMonth+1);
+    else
+        var month = tmpMonth+1;
+
+    var year = date.getFullYear();
+
+    var tmpDay = date.getDate();
+    if(parseInt(tmpDay) < 10)
+        var day = '0' + tmpDay;
+    else
+        var day = tmpDay;
+
+    var tmpHour = date.getHours();
+    if(parseInt(tmpHour) < 10)
+        var hour = '0' + tmpHour;
+    else
+        var hour = tmpHour;
+
+    var tmpMinutes = date.getMinutes();
+    if(parseInt(tmpMinutes) < 10)
+        var minutes = '0' + tmpMinutes;
+    else
+        var minutes = tmpMinutes;
+
+    var tmpSeconds = date.getSeconds();
+    if(parseInt(tmpSeconds) < 10)
+        var seconds = '0' + tmpSeconds;
+    else
+        var seconds = tmpSeconds;
+
+    var newDate = year + '/' + month + '/' + day + '-' + hour + ':' + minutes + ':' + seconds;
+
+    return newDate;
+}

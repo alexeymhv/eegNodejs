@@ -16,44 +16,69 @@
                         }
                     });
 
+                    var socket = io.connect('127.0.1.1:3000', {reconnect:true});
+
                     $('#container').highcharts({
                         chart: {
-                            type: 'spline',
-                            animation: Highcharts.svg, // don't animate in old IE
+                            //type: 'spline',
+                            renderTo: 'container',
+                            animation: false,
+                            zoomType: 'x',
+//                            height: 500,
+//                            width: 1024,
+                            //animation: Highcharts.svg, // don't animate in old IE
                             marginRight: 10,
                             events: {
                                 load: function () {
                                     var samplevalue = new Array();
-                                    var socket = io.connect('127.0.1.1:3000', {reconnect:true});
                                     var series = this.series[0];
+                                    var chart = $('#container').highcharts();
 
                                     socket.on('message', function(data){
                                         samplevalue = data.message;
                                         console.log(samplevalue.length);
                                         socket.emit('messageSuccess', {data: 'success'});
-                                        //maxSamples = 20,
+                                        console.log(convertTime(parseInt(samplevalue[0]/1000)));
+                                        console.log((new Date()).getTime());
 
                                         count = 0;
-                                        time = (new Date()).getTime();
+                                        var data = new Array();
+                                        var timeArr = new Array();
+                                        for(i=0;i<samplevalue.length; i++){
+                                            if(i%2 != 0) {
+                                                timeArr.push(parseInt(new Date().getTime()/1000));
+                                                data.push(parseFloat(samplevalue[i]));
+                                            }
+                                        }
+                                        console.log(parseInt(samplevalue[0]/1000));
 
-                                        setInterval(function () {
-                                            var x = (new Date()).getTime(), // current time
-                                                    y = parseFloat(samplevalue[count+1]);
-                                            series.addPoint([x, y], true, true);
-                                            console.log(x + ' ' + y);
-                                            count+=2;
-                                        }, 500);
-
+                                        series.setData(data);
                                     });
                                 }
                             }
                         },
+                        plotOptions: {
+                            line: { /* or spline, area, series, areaspline etc.*/
+                                marker: {
+                                    enabled: false
+                                },
+                                animation : {
+                                    duration : 0
+                                },
+                                turboThreshold: 10000,
+                                lineWidth: 1,
+                                lineColor: 'red'
+                            },
+                            series:{
+                                animation: false
+                            }
+                        },
                         title: {
-                            text: 'Live random data'
+                            text: 'Live EEG-SMT data'
                         },
                         xAxis: {
                             type: 'datetime',
-                            tickPixelInterval: 150
+                            tickPixelInterval: 150,
                         },
                         yAxis: {
                             title: {
@@ -63,45 +88,75 @@
                                 value: 0,
                                 width: 1,
                                 color: '#808080'
-                            }]
+                            }],
+                            max:0.7,
+                            min:-0.1
+
                         },
                         tooltip: {
                             formatter: function () {
                                 return '<b>' + this.series.name + '</b><br/>' +
                                         Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
-                                        Highcharts.numberFormat(this.y, 2);
+                                        Highcharts.numberFormat(this.y, 6);
                             }
                         },
                         legend: {
                             enabled: false
                         },
                         exporting: {
-                            enabled: false
+                            enabled: true
                         },
                         series: [{
-                            name: 'Random data',
-                            data: (function () {
-                                // generate an array of random data
-                                var data = [],
-                                        time = (new Date()).getTime(),
-                                        i;
-
-                                for (i = -19; i <= 0; i += 1) {
-                                    data.push({
-                                        x: time + i * 1000,
-                                        y: Math.random()
-                                    });
-                                }
-                                return data;
-                            }())
+                            name: 'EEG',
+//                            pointInterval:  3600 * 1000,
+//                            pointStart: Date.UTC(2008, 1, 01, 0, 2, 5, 0),
+                            data: []
                         }]
                     });
+                    function convertTime(timestamp) {
+                        var date = new Date(timestamp * 1000);
+                        var tmpMonth = date.getMonth();
+                        if(parseInt(tmpMonth) < 9)
+                            var month = '0' + (tmpMonth+1);
+                        else
+                            var month = tmpMonth+1;
+
+                        var year = date.getFullYear();
+
+                        var tmpDay = date.getDate();
+                        if(parseInt(tmpDay) < 10)
+                            var day = '0' + tmpDay;
+                        else
+                            var day = tmpDay;
+
+                        var tmpHour = date.getHours();
+                        if(parseInt(tmpHour) < 10)
+                            var hour = '0' + tmpHour;
+                        else
+                            var hour = tmpHour;
+
+                        var tmpMinutes = date.getMinutes();
+                        if(parseInt(tmpMinutes) < 10)
+                            var minutes = '0' + tmpMinutes;
+                        else
+                            var minutes = tmpMinutes;
+
+                        var tmpSeconds = date.getSeconds();
+                        if(parseInt(tmpSeconds) < 10)
+                            var seconds = '0' + tmpSeconds;
+                        else
+                            var seconds = tmpSeconds;
+
+                        var newDate = year + '/' + month + '/' + day + '-' + hour + ':' + minutes + ':' + seconds;
+
+                        return newDate;
+                    }
 
                 });
             });
         </script>
         <div id="message"></div>
-        <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div id="container" style="min-width: 320px; height: 480px; margin: 0 auto"></div>
 
     </body>
 </html>

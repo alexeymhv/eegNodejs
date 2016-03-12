@@ -49,8 +49,8 @@ client.host('127.0.0.1');
 client.port( 4242 );
 
 var mQuery = opentsdb.mquery();
-mQuery.aggregator( 'sum' );
-mQuery.tags( 'host', 'A' );
+mQuery.aggregator( 'none' );
+mQuery.tags( 'tag', '*' );
 mQuery.metric( 'eeg.data' );
 
 var valArr = new Array();
@@ -59,10 +59,8 @@ var timeArr = new Array();
 setInterval(function(){
     var data = new Date();
     var current_time = parseInt(data.getTime()/1000);
-    console.log(current_time-2000);
-    console.log(current_time);
 
-    client.start( convertTime(current_time-500) );
+    client.start( convertTime(current_time-200) );
     client.end( convertTime(current_time) );
     client.queries(mQuery);
 

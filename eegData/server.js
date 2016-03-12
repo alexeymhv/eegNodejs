@@ -10,8 +10,6 @@ var eegModule = new SerialPort.SerialPort('/dev/ttyUSB0', {baudrate: 57600},{buf
 
 var createSocket = require( 'opentsdb-socket' );
 var socket = createSocket();
-
-//socket.host( '192.168.0.108' );
 socket.host( '127.0.0.1' );
 socket.port( 4242 );
 socket.connect();
@@ -57,19 +55,23 @@ eegModule.on('data', function(data) {
         var value  = '';
         var now = require('date-now');
         //var now = parseInt(data.getTime()/1000);
+        var counterTag = 0;
 
         for(i=3; i< dataArr.length; i+=17){
-            samplevalue = ((dataArr[i] * 256) + dataArr[i+1] -512) * Math.pow(10, -6);
+            samplevalue = ((dataArr[i] * 256) + (dataArr[i+1] -512)) * Math.pow(10, -3);
+            console.log(samplevalue);
             value += 'put ';
             value += 'eeg.data ';
             value += parseInt(Date.now()/1000) + ' ';
-            value += samplevalue + ' ';
-            value += 'host=A\n';
+            value += parseFloat(samplevalue) + ' ';
+            value += 'tag=' + counterTag + '\n';
+            counterTag++;
 
             socket.write( value, function ack() {
                 value = '';
             });
         }
+        counterTag = 0;
         //console.log(Date.now());
         console.log('...data written...');
         p.length = 0;

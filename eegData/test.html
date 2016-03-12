@@ -24,34 +24,28 @@
                             renderTo: 'container',
                             animation: false,
                             zoomType: 'x',
-//                            height: 500,
-//                            width: 1024,
-                            //animation: Highcharts.svg, // don't animate in old IE
                             marginRight: 10,
                             events: {
                                 load: function () {
                                     var samplevalue = new Array();
                                     var series = this.series[0];
                                     var chart = $('#container').highcharts();
-
+                                    var count = 0;
                                     socket.on('message', function(data){
                                         samplevalue = data.message;
                                         console.log(samplevalue.length);
                                         socket.emit('messageSuccess', {data: 'success'});
-                                        console.log(convertTime(parseInt(samplevalue[0]/1000)));
-                                        console.log((new Date()).getTime());
 
-                                        count = 0;
                                         var data = new Array();
                                         var timeArr = new Array();
+                                        var time = (new Date()).getTime();
                                         for(i=0;i<samplevalue.length; i++){
                                             if(i%2 != 0) {
-                                                timeArr.push(parseInt(new Date().getTime()/1000));
-                                                data.push(parseFloat(samplevalue[i]));
+                                                data.push({x: parseFloat(samplevalue[i-1]), y: parseFloat(samplevalue[i])});
+                                                console.log(time);
                                             }
                                         }
                                         console.log(parseInt(samplevalue[0]/1000));
-
                                         series.setData(data);
                                     });
                                 }
@@ -70,7 +64,7 @@
                                 lineColor: 'red'
                             },
                             series:{
-                                animation: false
+                                animation: false,
                             }
                         },
                         title: {
@@ -78,7 +72,8 @@
                         },
                         xAxis: {
                             type: 'datetime',
-                            tickPixelInterval: 150,
+                            tickPixelInterval: 100,
+
                         },
                         yAxis: {
                             title: {
@@ -89,8 +84,8 @@
                                 width: 1,
                                 color: '#808080'
                             }],
-                            max:0.7,
-                            min:-0.1
+                            max:0.6,
+                            min:-0.6
 
                         },
                         tooltip: {
@@ -108,8 +103,6 @@
                         },
                         series: [{
                             name: 'EEG',
-//                            pointInterval:  3600 * 1000,
-//                            pointStart: Date.UTC(2008, 1, 01, 0, 2, 5, 0),
                             data: []
                         }]
                     });

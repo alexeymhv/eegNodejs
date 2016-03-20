@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    </head>
+    <body>
+        <script>
+            $(function () {
+                $(document).ready(function () {
+                    Highcharts.setOptions({
+                        global: {
+                            useUTC: false
+                        }
+                    });
+
+                    var socket = io.connect('127.0.1.1:3000', {reconnect:true});
+
+                    $('#container').highcharts({
+                        chart: {
+                            //type: 'spline',
+                            renderTo: 'container',
+                            animation: false,
+                            zoomType: 'x',
+                            marginRight: 10,
+                            events: {
+                                load: function () {
+                                    var samplevalue = new Array();
+                                    var series = this.series[0];
+                                    var chart = $('#container').highcharts();
+                                    var count = 0;
+                                    socket.on('message', function(data){
+                                        samplevalue = data.message;
+                                        console.log(samplevalue.length);
+                                        socket.emit('messageSuccess', {data: 'success'});
+
+                                        var data = new Array();
+                                        var timeArr = new Array();
+                                        var time = (new Date()).getTime();
+                                        for(i=0;i<samplevalue.length; i++){
+                                            if(i%2 != 0) {
+                                                data.push({x: parseFloat(samplevalue[i-1]), y: parseFloat(samplevalue[i])});
+                                                console.log(time);
+                                            }
+                                        }
+                                        console.log(parseInt(samplevalue[0]/1000));
+                                        series.setData(data);
+                                    });
+                                }
+                            }
+                        },
+                        plotOptions: {
+                            line: { /* or spline, area, series, areaspline etc.*/
+                                marker: {
+                                    enabled: false
+                                },
+                                animation : {
+                                    duration : 0
+                                },
+                                turboThreshold: 10000,
+                                lineWidth: 1,
+                                lineColor: 'red'
+                            },
+                            series:{
+                                animation: false,
+                            }
+                        },
+                        title: {
+                            text: 'Live EEG-SMT data'
+                        },
+                        xAxis: {
+                            type: 'datetime',
+                            tickPixelInterval: 100,
+
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Value'
+                            },
+                            plotLines: [{
+                                value: 0,
+                                width: 1,
+                                color: '#808080'
+                            }],
+                            max:0.6,
+                            min:-0.6
+
+                        },
+                        tooltip: {
+                            formatter: function () {
+                                return '<b>' + this.series.name + '</b><br/>' +
+                                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                                        Highcharts.numberFormat(this.y, 6);
+                            }
+                        },
+                        legend: {
+                            enabled: false
+                        },
+                        exporting: {
+                            enabled: true
+                        },
+                        series: [{
+                            name: 'EEG',
+                            data: []
+                        }]
+                    });
+                    function convertTime(timestamp) {
+                        var date = new Date(timestamp * 1000);
+                        var tmpMonth = date.getMonth();
+                        if(parseInt(tmpMonth) < 9)
+                            var month = '0' + (tmpMonth+1);
+                        else
+                            var month = tmpMonth+1;
+
+                        var year = date.getFullYear();
+
+                        var tmpDay = date.getDate();
+                        if(parseInt(tmpDay) < 10)
+                            var day = '0' + tmpDay;
+                        else
+                            var day = tmpDay;
+
+                        var tmpHour = date.getHours();
+                        if(parseInt(tmpHour) < 10)
+                            var hour = '0' + tmpHour;
+                        else
+                            var hour = tmpHour;
+
+                        var tmpMinutes = date.getMinutes();
+                        if(parseInt(tmpMinutes) < 10)
+                            var minutes = '0' + tmpMinutes;
+                        else
+                            var minutes = tmpMinutes;
+
+                        var tmpSeconds = date.getSeconds();
+                        if(parseInt(tmpSeconds) < 10)
+                            var seconds = '0' + tmpSeconds;
+                        else
+                            var seconds = tmpSeconds;
+
+                        var newDate = year + '/' + month + '/' + day + '-' + hour + ':' + minutes + ':' + seconds;
+
+                        return newDate;
+                    }
+
+                });
+            });
+        </script>
+        <div id="message"></div>
+        <div id="container" style="min-width: 320px; height: 480px; margin: 0 auto"></div>
+
+    </body>
+</html>

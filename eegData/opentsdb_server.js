@@ -17,7 +17,7 @@ var server = http.createServer(function(request, response){
             response.write('hello world');
             response.end();
             break;
-        case '/test.html':
+        case '/eegsmt.html':
             fs.readFile(__dirname + path, function(error, data){
                 if(error){
                     response.writeHead(404);

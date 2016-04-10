@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+    <title>Pulsometer</title>
+    <style>
+        span {
+            text-decoration:underline;
+            color:blue;
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pulsometer Data</h1><br/>
+    <p>Show Metrics <span onClick="show('BPM');">BPM</span>,
+                    <span onclick="show('SPO2');">SPO2</span>
+    </p>
+
+    <div id="BPM" class="page" style=""></div>
+    <div id="SPO2" class="page" style=""></div>
+
+    <script>
+        var socket = io.connect('127.0.1.1:3000', {reconnect:true});
+
+        var BPM = 0;
+        var SPO2 = 0;
+        var pages = document.getElementsByClassName('page');
+
+        socket.on('message', function(data){
+            var data = data.message;
+            var arr = data.split(';');
+            BPM = arr[0];
+            SPO2 = arr[1];
+
+            for(var i=0; i<pages.length; i++){
+                if(pages[i].style.display == 'block'){
+                    switch(pages[i].id){
+                        case "BPM":
+                            document.getElementById('BPM').innerHTML = BPM;
+                            break;
+                        case "SPO2":
+                            document.getElementById('SPO2').innerHTML = SPO2;
+                            break;
+                    }
+                }
+            }
+
+        });
+
+        function show(elementID){
+            document.getElementById('BPM').innerHTML = BPM;
+            document.getElementById('SPO2').innerHTML = SPO2;
+            var ele=document.getElementById(elementID);
+            if(!ele){
+                alert("no such element!");
+                return;
+            }
+            for(var i=0; i<pages.length; i++){
+                pages[i].style.display = 'none';
+            }
+            ele.style.display = 'block';
+        }
+
+    </script>
+
+</body>
+</html>

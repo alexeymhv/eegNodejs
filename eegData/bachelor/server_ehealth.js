@@ -6,9 +6,21 @@ var url = require('url');
 var fs = require('fs');
 var io = require('socket.io', {forceNew: true});
 
+//**Initialising serialport**/
+var serialport = require('serialport');
+var SerialPort = serialport.SerialPort;
+var portName = '/dev/ttyACM0';
+
+//**Initialising connection to opentsdb**//
+//TODO Check if there is a connection to port
+var connection = new SerialPort(portName, {
+    baudRate:115200,
+    parser:serialport.parsers.readline("\n")
+});
+//**************************************//
+
 var server = http.createServer(function(request, response){
     var path = url.parse(request.url).pathname;
-    console.log(path);
 
     switch(path){
         case '/':
@@ -17,6 +29,20 @@ var server = http.createServer(function(request, response){
             response.end();
             break;
         case '/eegsmt.html':
+            fs.readFile(__dirname + path, function(error, data){
+                if(error){
+                    response.writeHead(404);
+                    response.write("The page doesn't exist - 404");
+                    response.end;
+                }
+                else{
+                    response.writeHead(200, {"Content-Type":"text/html"});
+                    response.write(data, "utf8");
+                    response.end();
+                }
+            });
+            break;
+        case '/rpm.html':
             fs.readFile(__dirname + path, function(error, data){
                 if(error){
                     response.writeHead(404);
@@ -307,21 +333,28 @@ var server = http.createServer(function(request, response){
 server.listen(3000, '127.0.1.1');
 var listener = io.listen(server);
 
+connection.on('open', function(){
+    console.log("Connected...");
+});
+
+var wait = 0;
+connection.on('data', function(data){
+    if(wait < 10)
+        wait++;
+    else{
+        console.log(GetPulseDataArray(data)[0] + " " + GetPulseDataArray(data)[1]);
+        var msg = GetPulseDataArray(data)[0] + "|" + GetPulseDataArray(data)[1];
+        listener.sockets.emit('pulse data', msg);
+    }
+});
+
+function GetPulseDataArray(data){
+    var arr = data.split("|");
+    var pulse = new Array(2);
+    pulse[0] = arr[4];
+    pulse[1] = arr[5];
+    return pulse;
+}
 
 
-
-
-//connection.on('data', function(data) {
-//    var BPM = 0;
-//    var SPO2 = 0;
-//    var Position = 0;
-//    var arr = data.split("|");
-//    BPM = arr[0];
-//    SPO2 = arr[1];
-//
-//    var message =  "BPM = " + BPM + ";SPO2 = " + SPO2;
-//
-//    console.log("BPM = " + BPM + "; SPO2 = " + SPO2);
-//    listener.sockets.emit('message', {'message':message});
-//});
 

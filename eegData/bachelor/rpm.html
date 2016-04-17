@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+</body>
+</html><html>
+<head>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+</head>
+<body>
+<script>
+    $(function () {
+        $(document).ready(function () {
+            Highcharts.setOptions({
+                global: {
+                    useUTC: false
+                }
+            });
+
+            var socket = io.connect('127.0.1.1:3000', {reconnect:true});
+
+            $('#container').highcharts({
+                chart: {
+                    renderTo: 'container',
+                    animation: false,
+                    zoomType: 'x',
+                    marginRight: 10,
+                    events: {
+                        load: function () {
+                            var samplevalue = new Array();
+                            var series = this.series[0];
+                            var chart = $('#container').highcharts();
+                            var count = 0;
+                            socket.on('message', function(data){
+                                samplevalue = data.message;
+                                console.log(data.message[0].magnitude);
+                                console.log(samplevalue.length);
+
+                                var data = new Array();
+
+                                for(var i=0; i<samplevalue.length; i++){
+//                                    if(parseFloat(samplevalue[i].magnitude) <= 1)
+                                        data.push({x:parseFloat(samplevalue[i].frequency), y: parseFloat(samplevalue[i].magnitude)});
+                                }
+
+                                series.setData(data);
+                            });
+                        }
+                    }
+                },
+                plotOptions: {
+                    line: { /* or spline, area, series, areaspline etc.*/
+                        marker: {
+                            enabled: false
+                        },
+                        animation : {
+                            duration : 0
+                        },
+                        turboThreshold: 10000,
+                        lineWidth: 1,
+                        lineColor: 'red'
+                    },
+                    series:{
+                        animation: false,
+                    }
+                },
+                title: {
+                    text: 'Live EEG-SMT data'
+                },
+                xAxis: {
+//                    load: function () {
+//                        socket.on('message', function(data){
+//                            samplevalue = data.message;
+//                            console.log(samplevalue.length);
+//                            socket.emit('messageSuccess', {data: 'success'});
+//
+//                            var data = new Array();
+//                            series.setData();
+//                        });
+//                    }
+                    type: 'categories',
+                    tickPixelInterval: 10,
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }],
+                    max:6,
+                    min:0
+
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                                Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                                Highcharts.numberFormat(this.y, 6);
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                exporting: {
+                    enabled: true
+                },
+                series: [{
+                    name: 'EEG',
+                    data: []
+                }]
+            });
+
+        });
+    });
+</script>
+<div id="message"></div>
+<div id="container" style="min-width: 320px; height: 480px; margin: 0 auto"></div>
+
+</body>
+</html>

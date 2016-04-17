@@ -1,4 +1,7 @@
 <div>
-  <h1>Widget view</h1>
-  <p>Content of {{config.sample}}</p>
+  <h1>Pulse Oximeter</h1>
+  <div ng-controller="bpmController">
+    <h3>Pulse: {{bpm.pulse}}</h3>
+    <h3>SPO2: {{bpm.spo2}}</h3>
+  </div>
 </div>

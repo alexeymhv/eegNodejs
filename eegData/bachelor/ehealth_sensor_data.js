@@ -41,7 +41,6 @@ connection.on('data', function(data){
     else{
         //WritePosToDB(GetPositionArray(data));
         console.log(GetPulseDataArray(data)[0] + " " + GetPulseDataArray(data)[1]);
-
     }
 });
 

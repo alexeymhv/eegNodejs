@@ -493,7 +493,7 @@ angular.module('adf')
 
             if (model) {
               if (!model.title){
-                model.title = 'Dashboard';
+                model.title = 'E-Health Platform';
               }
               if (!model.titleTemplateUrl) {
                 model.titleTemplateUrl = adfTemplatePath + 'dashboard-title.html';

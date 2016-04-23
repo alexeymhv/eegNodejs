@@ -312,7 +312,7 @@ angular.module('adf')
               column.widgets = [];
             }
 
-            // if a column exist at the counter index, copy over the column
+            // if a column exist at the rpmCounter index, copy over the column
             if (angular.isDefined(columns[counter])) {
               // do not add widgets to a column, which uses nested rows
               if (!angular.isDefined(column.rows)){
@@ -493,7 +493,7 @@ angular.module('adf')
 
             if (model) {
               if (!model.title){
-                model.title = 'E-Health Platform';
+                model.title = 'BioSignals and Sensors';
               }
               if (!model.titleTemplateUrl) {
                 model.titleTemplateUrl = adfTemplatePath + 'dashboard-title.html';

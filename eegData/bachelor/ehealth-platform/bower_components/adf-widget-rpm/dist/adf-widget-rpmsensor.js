@@ -25,6 +25,9 @@ app.factory('socket', function(){
 app.controller('rpmController', ["$scope", "$interval", "socket", function($scope, $interval, socket){
   var rpm = this;
 
+  //TODO - the breathe frequency should be changing dynamically
+  rpm.frequency = "Loading...";
+
   //$scope.msgs = [];
   //
   //$scope.sendMsg = function(){
@@ -40,28 +43,36 @@ app.controller('rpmController', ["$scope", "$interval", "socket", function($scop
   socket.on('breathe data', function (brData) {
 
     var dataArray = new Array();
-    for(var i=0; i<brData.length; i++){
+    for(var i=1; i<brData.length; i++){
       dataArray.push({x: parseFloat(brData[i].frequency), y: parseFloat(brData[i].magnitude)});
     }
 
+    //rpm.frequency = parseFloat((parseFloat(GetFrequency(brData))/60)) * 16;
+    rpm.frequency = GetFrequency(brData);
+
     $scope.chartConfig = {
-      chart: {
-        type: 'line',
-        animation: false,
-        zoomType: 'x'
+      options: {
+        chart: {
+          type: 'line',
+          animation: false,
+          zoomType: 'x'
+        },
+        plotOptions: {
+          line: {
+            marker: {
+              enabled: false
+            },
+            animation : {
+              duration : 0
+            }
+          },
+          series: {
+            turboThreshold: 10000
+          }
+        }
       },
       title: {
         text: 'Live RPM'
-      },
-      plotOptions: {
-        line: {
-          marker: {
-            enabled: false
-          }
-        },
-        series: {
-          turboThreshold: 0
-        }
       },
       xAxis: {
         type: 'categories',
@@ -71,7 +82,7 @@ app.controller('rpmController', ["$scope", "$interval", "socket", function($scop
         title: {
           text: 'Magnitude'
         },
-        max:0.5,
+        max:5,
         min:0
       },
       series:[{
@@ -84,7 +95,26 @@ app.controller('rpmController', ["$scope", "$interval", "socket", function($scop
     $scope.$digest();
   });
 
+  function GetFrequency(brData){
+    var idx = 0;
+    var max = 0
+
+    for(var i=2; i<brData.length; i++){
+      if(parseFloat(brData[i].frequency) > 10) {
+        if(max == 0)
+          max = parseFloat(brData[i-1].magnitude);
+        if (parseFloat(brData[i].magnitude) > max) {
+          max = parseFloat(brData[i].magnitude);
+          idx = i;
+
+        }
+      }
+    }
+
+    return brData[idx].frequency;
+  }
+
 }]);
 
 angular.module("adf.widget.rpmsensor").run(["$templateCache", function($templateCache) {$templateCache.put("{widgetsPath}/rpmsensor/src/edit.html","<form role=form><div class=form-group><label for=sample>Sample</label> <input type=text class=form-control id=sample ng-model=config.sample placeholder=\"Enter sample\"></div></form>");
-$templateCache.put("{widgetsPath}/rpmsensor/src/view.html","<div ng-controller=rpmController><div ng-if=chartConfig><highchart id=chart1 config=chartConfig></highchart></div></div>");}]);})(window);
+$templateCache.put("{widgetsPath}/rpmsensor/src/view.html","<div ng-controller=rpmController><div ng-if=!chartConfig><h1>Loading...</h1></div><div ng-if=chartConfig><highchart id=chart1 config=chartConfig></highchart></div><div><h3>Frequency: {{rpm.frequency}}</h3></div></div>");}]);})(window);

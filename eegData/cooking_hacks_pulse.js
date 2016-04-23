@@ -21,10 +21,10 @@ connection.on('data', function(data) {
         //var BPM = 0;
         //var SPO2 = 0;
         ////var Position = 0;
-        //var arr = data.split("|");
-        //BPM = arr[0];
-        //SPO2 = arr[1];
-        //Position = arr[2];
+        //var rpmArray = data.split("|");
+        //BPM = rpmArray[0];
+        //SPO2 = rpmArray[1];
+        //Position = rpmArray[2];
 
         //console.log("BPM = " + BPM + "; SPO2 = " + SPO2);
         console.log(data);

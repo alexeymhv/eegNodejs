@@ -5817,7 +5817,7 @@ function Browser(window, document, $log, $sniffer) {
 
   /**
    * Executes the `fn` function(supports currying) and decrements the `outstandingRequestCallbacks`
-   * counter. If the counter reaches 0, all the `outstandingRequestCallbacks` are executed.
+   * rpmCounter. If the rpmCounter reaches 0, all the `outstandingRequestCallbacks` are executed.
    */
   function completeOutstandingRequest(fn) {
     try {
@@ -16380,25 +16380,25 @@ function $RootScopeProvider() {
            // let's assume that scope was dependency injected as the $rootScope
            var scope = $rootScope;
            scope.name = 'misko';
-           scope.counter = 0;
+           scope.rpmCounter = 0;
 
-           expect(scope.counter).toEqual(0);
+           expect(scope.rpmCounter).toEqual(0);
            scope.$watch('name', function(newValue, oldValue) {
-             scope.counter = scope.counter + 1;
+             scope.rpmCounter = scope.rpmCounter + 1;
            });
-           expect(scope.counter).toEqual(0);
+           expect(scope.rpmCounter).toEqual(0);
 
            scope.$digest();
            // the listener is always called during the first $digest loop after it was registered
-           expect(scope.counter).toEqual(1);
+           expect(scope.rpmCounter).toEqual(1);
 
            scope.$digest();
            // but now it will not be called unless the value changes
-           expect(scope.counter).toEqual(1);
+           expect(scope.rpmCounter).toEqual(1);
 
            scope.name = 'adam';
            scope.$digest();
-           expect(scope.counter).toEqual(2);
+           expect(scope.rpmCounter).toEqual(2);
 
 
 
@@ -16412,19 +16412,19 @@ function $RootScopeProvider() {
              // This is the change listener, called when the value returned from the above function changes
              function(newValue, oldValue) {
                if ( newValue !== oldValue ) {
-                 // Only increment the counter if the value changed
+                 // Only increment the rpmCounter if the value changed
                  scope.foodCounter = scope.foodCounter + 1;
                }
              }
            );
-           // No digest has been run so the counter will be zero
+           // No digest has been run so the rpmCounter will be zero
            expect(scope.foodCounter).toEqual(0);
 
            // Run the digest but since food has not changed count will still be zero
            scope.$digest();
            expect(scope.foodCounter).toEqual(0);
 
-           // Update food and run digest.  Now the counter will increment
+           // Update food and run digest.  Now the rpmCounter will increment
            food = 'cheeseburger';
            scope.$digest();
            expect(scope.foodCounter).toEqual(1);
@@ -16787,25 +16787,25 @@ function $RootScopeProvider() {
        * ```js
            var scope = ...;
            scope.name = 'misko';
-           scope.counter = 0;
+           scope.rpmCounter = 0;
 
-           expect(scope.counter).toEqual(0);
+           expect(scope.rpmCounter).toEqual(0);
            scope.$watch('name', function(newValue, oldValue) {
-             scope.counter = scope.counter + 1;
+             scope.rpmCounter = scope.rpmCounter + 1;
            });
-           expect(scope.counter).toEqual(0);
+           expect(scope.rpmCounter).toEqual(0);
 
            scope.$digest();
            // the listener is always called during the first $digest loop after it was registered
-           expect(scope.counter).toEqual(1);
+           expect(scope.rpmCounter).toEqual(1);
 
            scope.$digest();
            // but now it will not be called unless the value changes
-           expect(scope.counter).toEqual(1);
+           expect(scope.rpmCounter).toEqual(1);
 
            scope.name = 'adam';
            scope.$digest();
-           expect(scope.counter).toEqual(2);
+           expect(scope.rpmCounter).toEqual(2);
        * ```
        *
        */

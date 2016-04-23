@@ -28,16 +28,16 @@ connection.on('data', function(data){
         console.log(counter);
         counter++;
 
-        //if(counter == 32){
-        //    counter = 0;
-        //    var phasors = fft(arr);
+        //if(rpmCounter == 32){
+        //    rpmCounter = 0;
+        //    var phasors = fft(rpmArray);
         //    var frequencies = fftUtil.fftFreq(phasors, 10);
         //    var magnitudes = fftUtil.fftMag(phasors);
         //    var both = frequencies.map(function (f, ix) {
         //        return {frequency: f, magnitude: magnitudes[ix]};
         //    });
         //    console.log(both);
-        //    arr.length = 0;
+        //    rpmArray.length = 0;
         //}
     }
 });
@@ -62,12 +62,12 @@ var timer = setInterval(function () {
     //time++;
     //console.log(time);
     //if(time == 60){
-    //    console.log(counter);
+    //    console.log(rpmCounter);
     //    time = 0;
-    //    counter = 0;
-    //    if(arr.length != 0)
-    //        PrintArray(arr);
-    //    arr.length = 0;
+    //    rpmCounter = 0;
+    //    if(rpmArray.length != 0)
+    //        PrintArray(rpmArray);
+    //    rpmArray.length = 0;
     //}
     console.log(counter);
     counter = 0;

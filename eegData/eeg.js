@@ -61,7 +61,7 @@ var server;
 //server.render(imgOptions, chartOptions, generateImgTag);
 
 //server = http.createServer(function (req, res) {
-//    counter++;
+//    rpmCounter++;
 //    console.log("Request: " + req.url);
 //
 //    if (req.url == "/index.html") {
@@ -73,7 +73,7 @@ var server;
 //    }
 //
 //    res.setHeader("Content-Type", "text/html");
-//    res.end("<p>Hello World. Request counter: " + counter + ".</p>");
+//    res.end("<p>Hello World. Request rpmCounter: " + rpmCounter + ".</p>");
 //});
 //console.log('Server running at http://127.0.0.1:3000/');
 //server.listen(port, serverUrl);

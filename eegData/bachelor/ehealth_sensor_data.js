@@ -24,6 +24,10 @@ socket.host( '127.0.0.1' );
 socket.port( 4242 );
 socket.connect();
 
+//**Initialising array for pulse data**/
+var pulseArray = new Array();
+var counter = 0;
+
 //**Initialising connection to opentsdb**//
 var connection = new SerialPort(portName, {
     baudRate:115200,
@@ -35,12 +39,25 @@ connection.on('open', function(){
     console.log("Connected...");
 });
 
+//var timer = setInterval(function () {
+//
+//},1000);
 connection.on('data', function(data){
+    //console.log("AAA");
     if(wait < 10)
         wait++;
     else{
-        //WritePosToDB(GetPositionArray(data));
-        console.log(GetPulseDataArray(data)[0] + " " + GetPulseDataArray(data)[1]);
+        pulseArray[counter] = GetPulseDataArray(data)[0];
+        counter++;
+        if(counter == 73){
+            counter = 0;
+            WritePulseToDB(GetAverageValue(pulseArray));
+            //console.log(GetAverageValue(pulseArray));
+            //WritePulseToDB(GetPulseDataArray(data)[0]);
+            //pulseArray.length = 0;
+            console.log(GetPulseDataArray(data)[0]);
+        }
+        //console.log(GetPulseDataArray(data)[0] + " " + GetPulseDataArray(data)[1]);
     }
 });
 
@@ -69,11 +86,21 @@ function GetPositionArray(data){
 }
 
 function GetPulseDataArray(data){
+    console.log(data);
     var arr = data.split("|");
     var pulse = new Array(2);
     pulse[0] = arr[4];
     pulse[1] = arr[5];
     return pulse;
+}
+
+function GetAverageValue(valArr) {
+    var average_value = 0
+    for(var i=0; i<valArr.length; i++){
+        average_value += parseFloat(valArr[i]);
+    }
+    average_value /= valArr.length;
+    return parseFloat(average_value);
 }
 
 function WritePosToDB(data) {
@@ -88,6 +115,22 @@ function WritePosToDB(data) {
 
     socket.write(value, function ack() {
        console.log('...data written...');
+    });
+}
+
+function WritePulseToDB(data) {
+    console.log(data);
+    var value = '';
+    var now = require('date-now');
+
+    value += 'put ';
+    value += PULSOMETER_DB_NAME + ' ';
+    value += parseInt(Date.now()) + ' ';
+    value += parseFloat(data) + ' ';
+    value += 'tag=pulse\n';
+
+    socket.write(value, function ack() {
+        console.log('...data written...');
     });
 }
 

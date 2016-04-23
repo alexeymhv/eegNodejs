@@ -522,7 +522,7 @@ jQuery.extend({
 		return concat.apply( [], ret );
 	},
 
-	// A global GUID counter for objects
+	// A global GUID rpmCounter for objects
 	guid: 1,
 
 	// Bind a function to a context, optionally partially applying any
@@ -3429,7 +3429,7 @@ jQuery.extend({
 	// Is the DOM ready to be used? Set to true once it occurs.
 	isReady: false,
 
-	// A counter to track how many items to wait for before
+	// A rpmCounter to track how many items to wait for before
 	// the ready event fires. See #6781
 	readyWait: 1,
 
@@ -9325,7 +9325,7 @@ jQuery.extend({
 
 			if ( fireGlobals ) {
 				globalEventContext.trigger( "ajaxComplete", [ jqXHR, s ] );
-				// Handle the global AJAX counter
+				// Handle the global AJAX rpmCounter
 				if ( !( --jQuery.active ) ) {
 					jQuery.event.trigger("ajaxStop");
 				}

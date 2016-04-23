@@ -469,7 +469,7 @@ jQuery.extend({
 		return concat.apply( [], ret );
 	},
 
-	// A global GUID counter for objects
+	// A global GUID rpmCounter for objects
 	guid: 1,
 
 	// Bind a function to a context, optionally partially applying any

@@ -237,7 +237,7 @@ function erase(arr, item) {
 			break;
 		}
 	}
-	//return arr;
+	//return rpmArray;
 }
 
 /**
@@ -1039,7 +1039,7 @@ pathAnim = {
 		 * @param {Function} fn
 		 */
 		map: function (arr, fn) {
-			//return jQuery.map(arr, fn);
+			//return jQuery.map(rpmArray, fn);
 			var results = [],
 				i = 0,
 				len = arr.length;
@@ -11494,7 +11494,7 @@ Chart.prototype = {
 			chartHeight,
 			fireEndResize;
 
-		// Handle the isResizing counter
+		// Handle the isResizing rpmCounter
 		chart.isResizing += 1;
 		fireEndResize = function () {
 			if (chart) {
